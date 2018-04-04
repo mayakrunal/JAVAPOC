@@ -1,0 +1,15 @@
+com\microservices\accounts\AccountsConfiguration.class
+com\microservices\accounts\HomeController.class
+com\microservices\services\web\SearchCriteria.class
+com\microservices\services\web\HomeController.class
+com\microservices\services\web\WebAccountsService.class
+com\microservices\services\web\WebServer.class
+com\microservices\services\registration\RegistrationServer.class
+com\microservices\exceptions\AccountNotFoundException.class
+com\microservices\accounts\AccountsController.class
+com\microservices\Main.class
+com\microservices\services\web\WebAccountsController.class
+com\microservices\services\web\Account.class
+com\microservices\accounts\Account.class
+com\microservices\services\account\AccountsServer.class
+com\microservices\accounts\AccountRepository.class
