@@ -1,0 +1,25 @@
+spring:
+    application:
+        name: Quartz Demo
+    quartz:
+      job-store-type: jdbc
+      properties:
+        #Schedular
+        org.quartz.scheduler.instanceName: myschedular
+        org.quartz.scheduler.instanceId: AUTO
+        org.quartz.scheduler.threadName: quartz_thread
+        #ThreadPool
+        org.quartz.threadPool.threadCount: 1
+        #JobStore
+        org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.MSSQLDelegate
+        org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
+        org.quartz.jobStore.dataSource: QDB
+        #DataSource
+        org.quartz.dataSource.QDB.driver: com.microsoft.sqlserver.jdbc.SQLServerDriver
+        org.quartz.dataSource.QDB.URL: jdbc:sqlserver://localhost\SQLEXPRESS;databaseName=QuartzDB
+        org.quartz.dataSource.QDB.user: sa
+        org.quartz.dataSource.QDB.password: Sql1234!
+    datasource:
+      username: sa
+      password: Sql1234!
+      url: jdbc:sqlserver://localhost\SQLEXPRESS;databaseName=QuartzDB
