@@ -2,6 +2,7 @@ package com.pwc.quartzdemo.service.impl;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.pwc.quartzdemo.bean.params.CronTriggerParams;
@@ -10,6 +11,7 @@ import com.pwc.quartzdemo.bean.params.SimpleTriggerParams;
 import com.pwc.quartzdemo.job.SampleJob;
 import com.pwc.quartzdemo.service.JobScheduleService;
 import org.quartz.CronTrigger;
+import org.quartz.Job;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -24,28 +26,42 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 public class JobScheduleServiceImpl implements JobScheduleService {
 
     //Autowire factory bean Auto configured by Spring boot based on yaml properties
     @Autowired
-    private SchedulerFactoryBean schedulerFactoryBean;
+    SchedulerFactoryBean schedulerFactoryBean;
 
     @Override
     public void scheduleJob(final JobParams params) throws ParseException, SchedulerException {
 
         final Scheduler scheduler = schedulerFactoryBean.getScheduler();
+
+        final String jobName = params.getJobName();
+        //description for job in Quartz job store
+        final String jobDescription = params.getDescriptionNote();
+        final String jobMessage = params.getJobMessage();
+        //set the trigger name
+        final String triggerName = "Trigger - " + jobName;
+
+        //build the jobData
+        final Map<String, ?> jobData = SampleJob.getJobDataMap(jobName, jobMessage);
+
         //create the job detail
-        final JobDetail jobDetail = createJobDetail(SampleJob.class, params);
+        final JobDetail jobDetail = createJobDetail(SampleJob.class, jobName, jobDescription, jobData);
+
         //create the trigger
         Trigger trigger = null;
+
         switch (params.getTriggerType()) {
         case SIMPLE:
-            trigger = createSimpleTrigger(jobDetail, params.getSimpleTriggerParams());
+            trigger = createSimpleTrigger(triggerName, params.getSimpleTriggerParams());
             break;
         case CRON:
-            trigger = createCronTrigger(jobDetail, params.getCronTriggerParams());
+            trigger = createCronTrigger(triggerName, params.getCronTriggerParams());
             break;
         }
         //schedule the job
@@ -78,14 +94,19 @@ public class JobScheduleServiceImpl implements JobScheduleService {
 
     }
 
-    private static JobDetail createJobDetail(final Class jobClass, final JobParams params) {
+    private static JobDetail createJobDetail(final Class<? extends Job> jobClass, final String jobName, final String descriptionNote,
+                                             final Map<String, ?> jobData) {
         final JobDetailFactoryBean factoryBean = new JobDetailFactoryBean();
         //set job name
-        factoryBean.setBeanName(params.getJobName());
+        factoryBean.setBeanName(jobName);
         //set job description
-        factoryBean.setDescription(params.getDescriptionNote());
+        factoryBean.setDescription(descriptionNote);
         //set the Quartz job class
         factoryBean.setJobClass(jobClass);
+        //set the job Data
+        if (!CollectionUtils.isEmpty(jobData)) {
+            factoryBean.setJobDataAsMap(jobData);
+        }
         // job has to be durable to be stored in DB:
         factoryBean.setDurability(true);
         //need to call this once all properties are set
@@ -94,12 +115,10 @@ public class JobScheduleServiceImpl implements JobScheduleService {
         return factoryBean.getObject();
     }
 
-    private static SimpleTrigger createSimpleTrigger(final JobDetail jobDetail, final SimpleTriggerParams triggerParams) {
+    private static SimpleTrigger createSimpleTrigger(final String triggerName, final SimpleTriggerParams triggerParams) {
         final SimpleTriggerFactoryBean factoryBean = new SimpleTriggerFactoryBean();
         //set the trigger name
-        factoryBean.setBeanName("Trigger - " + jobDetail.getKey().getName());
-        //set the job details
-        factoryBean.setJobDetail(jobDetail);
+        factoryBean.setBeanName(triggerName);
         //start delay will override the specific start time so make sure set to 0 if start at specific time
         factoryBean.setStartDelay(0L);
         //set the repeat interval
@@ -112,12 +131,10 @@ public class JobScheduleServiceImpl implements JobScheduleService {
         return factoryBean.getObject();
     }
 
-    private static CronTrigger createCronTrigger(final JobDetail jobDetail, final CronTriggerParams triggerParams) throws ParseException {
+    private static CronTrigger createCronTrigger(final String triggerName, final CronTriggerParams triggerParams) throws ParseException {
         final CronTriggerFactoryBean factoryBean = new CronTriggerFactoryBean();
         //set the trigger name
-        factoryBean.setBeanName("Trigger - " + jobDetail.getKey().getName());
-        //set the job details
-        factoryBean.setJobDetail(jobDetail);
+        factoryBean.setBeanName(triggerName);
         //set start delay
         factoryBean.setStartDelay(0L);
         //set the cron expression

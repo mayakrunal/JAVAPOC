@@ -13,6 +13,8 @@ public class JobParams {
 
     private String descriptionNote;
 
+    private String jobMessage;
+
     private TriggerType triggerType;
 
     private SimpleTriggerParams simpleTriggerParams;
