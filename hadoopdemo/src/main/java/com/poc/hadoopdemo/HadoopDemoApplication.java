@@ -1,18 +1,9 @@
 package com.poc.hadoopdemo;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootApplication
 public class HadoopDemoApplication implements CommandLineRunner {
@@ -21,32 +12,31 @@ public class HadoopDemoApplication implements CommandLineRunner {
     private HadoopOperation hadoopOperation;
 
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SpringApplication.run(HadoopDemoApplication.class, args);
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(final String... args) throws Exception {
 
-        String uploadDir = args[0];
 
-        String sourceFile = args[1];
+        final String basePath = "/tmp/ProviderAnalytics_T108400/";
+
+        final String dir = "Raw_Data/";
+
+        //final String sourceFile = args[1];
+
 
         hadoopOperation.open();
 
-        hadoopOperation.makeDirectories(uploadDir);
 
-        Path path = Paths.get(sourceFile);
+        hadoopOperation.deleteDirectory(basePath + dir);
+
+        //hadoopOperation.makeDirectories(uploadDir);
+
+        //final Path path = Paths.get(sourceFile);
 
 
-        String outPath = new org.apache.hadoop.fs.Path(uploadDir, path.getFileName().toString()).toUri().getPath();
-
-
-        try( FSDataOutputStream outStream = hadoopOperation.getOutputStream(outPath, false)){
-
-            byte[] bytes = Files.readAllBytes(Paths.get(sourceFile));
-
-            outStream.write(bytes);
-        }
+        hadoopOperation.close();
     }
 }

@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Singleton;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -108,6 +111,19 @@ public class HadoopOperation {
             stream = fs.create(path);
         }
         return stream;
+    }
+
+    public void uploadFile(final String outPath, final File file) throws IOException {
+        try (final FSDataOutputStream outStream = getOutputStream(outPath, false)) {
+
+            try (final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+                while (bis.available() > 0) {
+                    final byte[] bytes = new byte[4096];
+                    bis.read(bytes);
+                    outStream.write(bytes);
+                }
+            }
+        }
     }
 
 
